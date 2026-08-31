@@ -8,7 +8,27 @@ const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false, loading: () => 
   <div className="h-96 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">Loading map…</div>
 )})
 
-const CROPS = ['Wheat', 'Tomato', 'Strawberry', 'Potato', 'Rice', 'Maize', 'Cotton', 'Sugarcane', 'Soybean', 'Other']
+const CROPS = [
+  'Apple',
+  'Blueberry',
+  'Cherry',
+  'Corn (maize)',
+  'Cotton',
+  'Grape',
+  'Orange',
+  'Peach',
+  'Pepper (bell)',
+  'Potato',
+  'Raspberry',
+  'Rice',
+  'Soybean',
+  'Squash',
+  'Strawberry',
+  'Sugarcane',
+  'Tomato',
+  'Wheat',
+  'Other',
+]
 const TOOLS = [
   { id: 'quallis', label: 'Quallis' },
   { id: 'senseorbit', label: 'Senseorbit' },
