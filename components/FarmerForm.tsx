@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false, loading: () => (
   <div className="h-96 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">Loading map…</div>
 )})
-//karja kaam bhai pls
+
 const CROPS = ['Wheat', 'Tomato', 'Strawberry', 'Potato', 'Rice', 'Maize', 'Cotton', 'Sugarcane', 'Soybean', 'Other']
 const TOOLS = [
   { id: 'quallis', label: 'Quallis' },
@@ -16,9 +16,72 @@ const TOOLS = [
   { id: 'croplens', label: 'Croplens' },
 ]
 
-type Props = { onSuccess: (id: string) => void }
+const T = {
+  en: {
+    yourDetails: 'Your details',
+    fullName: 'Full name',
+    namePlaceholder: 'e.g. Ravi Patel',
+    phone: 'Phone number',
+    phonePlaceholder: 'e.g. 9876543210',
+    mapTitle: 'Map your farm',
+    mapHint: 'Click points on the map to outline the affected area.',
+    diseaseInfo: 'Disease information',
+    cropType: 'Crop type',
+    selectCrop: 'Select crop…',
+    diseaseName: 'Disease name',
+    diseasePlaceholder: 'e.g. Wheat Leaf Rust',
+    photoLabel: 'Photo of affected crop',
+    photoClick: 'Click to upload a photo',
+    photoHint: 'JPG, PNG up to 10MB',
+    toolTitle: 'Detection tool used',
+    notesTitle: 'Notes',
+    notesOptional: '(optional)',
+    notesPlaceholder: 'Any additional observations…',
+    submit: 'Submit disease report',
+    submitting: 'Submitting…',
+    errName: 'Name is required',
+    errPhone: 'Phone number is required',
+    errCrop: 'Select a crop',
+    errDisease: 'Disease name is required',
+    errTool: 'Select a tool',
+    errMap: 'Please draw your farm on the map',
+  },
+  hi: {
+    yourDetails: 'आपकी जानकारी',
+    fullName: 'पूरा नाम',
+    namePlaceholder: 'जैसे रवि पटेल',
+    phone: 'फ़ोन नंबर',
+    phonePlaceholder: 'जैसे 9876543210',
+    mapTitle: 'अपना खेत मानचित्र पर बनाएं',
+    mapHint: 'प्रभावित क्षेत्र को रेखांकित करने के लिए मानचित्र पर बिंदु क्लिक करें।',
+    diseaseInfo: 'बीमारी की जानकारी',
+    cropType: 'फसल का प्रकार',
+    selectCrop: 'फसल चुनें…',
+    diseaseName: 'बीमारी का नाम',
+    diseasePlaceholder: 'जैसे गेहूं का पत्ती जंग',
+    photoLabel: 'प्रभावित फसल की फ़ोटो',
+    photoClick: 'फ़ोटो अपलोड करने के लिए क्लिक करें',
+    photoHint: 'JPG, PNG 10MB तक',
+    toolTitle: 'उपयोग किया गया डिटेक्शन टूल',
+    notesTitle: 'टिप्पणियाँ',
+    notesOptional: '(वैकल्पिक)',
+    notesPlaceholder: 'बीमारी या परिस्थितियों के बारे में कोई अतिरिक्त जानकारी…',
+    submit: 'रिपोर्ट सबमिट करें',
+    submitting: 'सबमिट हो रहा है…',
+    errName: 'नाम आवश्यक है',
+    errPhone: 'फ़ोन नंबर आवश्यक है',
+    errCrop: 'फसल चुनें',
+    errDisease: 'बीमारी का नाम आवश्यक है',
+    errTool: 'टूल चुनें',
+    errMap: 'कृपया मानचित्र पर अपना खेत बनाएं',
+  },
+}
 
-export default function FarmerForm({ onSuccess }: Props) {
+type Lang = 'en' | 'hi'
+type Props = { onSuccess: (id: string) => void; lang: Lang }
+
+export default function FarmerForm({ onSuccess, lang }: Props) {
+  const t = T[lang]
   const [form, setForm] = useState({
     farmer_name: '',
     phone_number: '',
@@ -27,7 +90,6 @@ export default function FarmerForm({ onSuccess }: Props) {
     disease_class: '',
     notes: '',
     tool_used: '',
-    language: 'en',
   })
   const [farmGeoJSON, setFarmGeoJSON] = useState<any>(null)
   const [centerLat, setCenterLat] = useState<number>(20.5937)
@@ -58,12 +120,12 @@ export default function FarmerForm({ onSuccess }: Props) {
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.farmer_name.trim()) e.farmer_name = 'Name is required'
-    if (!form.phone_number.trim()) e.phone_number = 'Phone number is required'
-    if (!form.crop) e.crop = 'Select a crop'
-    if (!form.disease.trim()) e.disease = 'Disease name is required'
-    if (!form.tool_used) e.tool_used = 'Select a tool'
-    if (!farmGeoJSON) e.map = 'Please draw your farm on the map'
+    if (!form.farmer_name.trim()) e.farmer_name = t.errName
+    if (!form.phone_number.trim()) e.phone_number = t.errPhone
+    if (!form.crop) e.crop = t.errCrop
+    if (!form.disease.trim()) e.disease = t.errDisease
+    if (!form.tool_used) e.tool_used = t.errTool
+    if (!farmGeoJSON) e.map = t.errMap
     return e
   }
 
@@ -74,7 +136,6 @@ export default function FarmerForm({ onSuccess }: Props) {
     setLoading(true)
 
     try {
-      // Upload photo if provided
       let photoUrl: string | null = null
       if (photo) {
         const ext = photo.name.split('.').pop()
@@ -86,7 +147,6 @@ export default function FarmerForm({ onSuccess }: Props) {
         }
       }
 
-      // Upsert farmer record
       const { data: existingFarmer } = await supabase
         .from('farmers')
         .select('id, dif_code')
@@ -99,20 +159,12 @@ export default function FarmerForm({ onSuccess }: Props) {
       if (!existingFarmer) {
         const { data: newFarmer } = await supabase
           .from('farmers')
-          .insert({
-            farmer_name: form.farmer_name,
-            phone_number: form.phone_number,
-            croplens: 0,
-            senseorbit: 0,
-            dizmatrix: 0,
-            role: 'farmer',
-          })
+          .insert({ farmer_name: form.farmer_name, phone_number: form.phone_number, croplens: 0, senseorbit: 0, dizmatrix: 0, role: 'farmer' })
           .select('dif_code')
           .single()
         farmerDif = newFarmer?.dif_code ?? 'SV69'
       }
 
-      // Insert outbreak report with status 'reviewing'
       const id = uuidv4()
       const { error } = await supabase.from('outbreak_reports').insert({
         id,
@@ -126,7 +178,7 @@ export default function FarmerForm({ onSuccess }: Props) {
         center_lat: centerLat,
         center_lng: centerLng,
         notes: form.notes || null,
-        language: form.language,
+        language: lang,
         reported_at: new Date().toISOString(),
         status: 'reviewing',
         photo_url: photoUrl,
@@ -144,24 +196,23 @@ export default function FarmerForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 fade-up">
-      {/* Farmer Info */}
       <section className="bg-white rounded-2xl p-6 shadow-sm border border-green-50">
-        <h2 className="font-semibold text-base mb-4 text-gray-800">Your details</h2>
+        <h2 className="font-semibold text-base mb-4 text-gray-800">{t.yourDetails}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Full name</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.fullName}</label>
             <input
               name="farmer_name" value={form.farmer_name} onChange={handleChange}
-              placeholder="e.g. Ravi Patel"
+              placeholder={t.namePlaceholder}
               className={`w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 ${errors.farmer_name ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.farmer_name && <p className="text-xs text-red-500 mt-1">{errors.farmer_name}</p>}
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Phone number</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.phone}</label>
             <input
               name="phone_number" value={form.phone_number} onChange={handleChange}
-              placeholder="e.g. 9876543210"
+              placeholder={t.phonePlaceholder}
               className={`w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 ${errors.phone_number ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.phone_number && <p className="text-xs text-red-500 mt-1">{errors.phone_number}</p>}
@@ -169,43 +220,40 @@ export default function FarmerForm({ onSuccess }: Props) {
         </div>
       </section>
 
-      {/* Farm Map */}
       <section className="bg-white rounded-2xl p-6 shadow-sm border border-green-50">
-        <h2 className="font-semibold text-base mb-1 text-gray-800">Map your farm</h2>
-        <p className="text-xs text-gray-400 mb-4">Use the polygon tool to outline the affected area.</p>
+        <h2 className="font-semibold text-base mb-1 text-gray-800">{t.mapTitle}</h2>
+        <p className="text-xs text-gray-400 mb-4">{t.mapHint}</p>
         <FarmMap onChange={handleMapChange} />
         {errors.map && <p className="text-xs text-red-500 mt-2">{errors.map}</p>}
       </section>
 
-      {/* Disease Info */}
       <section className="bg-white rounded-2xl p-6 shadow-sm border border-green-50">
-        <h2 className="font-semibold text-base mb-4 text-gray-800">Disease information</h2>
+        <h2 className="font-semibold text-base mb-4 text-gray-800">{t.diseaseInfo}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Crop type</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.cropType}</label>
             <select
               name="crop" value={form.crop} onChange={handleChange}
               className={`w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 bg-white ${errors.crop ? 'border-red-400' : 'border-gray-200'}`}
             >
-              <option value="">Select crop…</option>
+              <option value="">{t.selectCrop}</option>
               {CROPS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             {errors.crop && <p className="text-xs text-red-500 mt-1">{errors.crop}</p>}
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Disease name</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t.diseaseName}</label>
             <input
               name="disease" value={form.disease} onChange={handleChange}
-              placeholder="e.g. Wheat Leaf Rust"
+              placeholder={t.diseasePlaceholder}
               className={`w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 ${errors.disease ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.disease && <p className="text-xs text-red-500 mt-1">{errors.disease}</p>}
           </div>
         </div>
 
-        {/* Photo Upload */}
         <div className="mb-4">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Photo of affected crop</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">{t.photoLabel}</label>
           <div
             onClick={() => fileRef.current?.click()}
             className="border-2 border-dashed border-gray-200 rounded-xl p-5 cursor-pointer hover:border-green-400 transition-colors text-center"
@@ -215,8 +263,8 @@ export default function FarmerForm({ onSuccess }: Props) {
             ) : (
               <div>
                 <div className="text-3xl mb-2">📷</div>
-                <p className="text-sm text-gray-400">Click to upload a photo</p>
-                <p className="text-xs text-gray-300 mt-1">JPG, PNG up to 10MB</p>
+                <p className="text-sm text-gray-400">{t.photoClick}</p>
+                <p className="text-xs text-gray-300 mt-1">{t.photoHint}</p>
               </div>
             )}
           </div>
@@ -224,9 +272,8 @@ export default function FarmerForm({ onSuccess }: Props) {
         </div>
       </section>
 
-      {/* Tool Selection */}
       <section className="bg-white rounded-2xl p-6 shadow-sm border border-green-50">
-        <h2 className="font-semibold text-base mb-4 text-gray-800">Detection tool used</h2>
+        <h2 className="font-semibold text-base mb-4 text-gray-800">{t.toolTitle}</h2>
         <div className="grid grid-cols-2 gap-3">
           {TOOLS.map(tool => (
             <button
@@ -246,12 +293,13 @@ export default function FarmerForm({ onSuccess }: Props) {
         {errors.tool_used && <p className="text-xs text-red-500 mt-2">{errors.tool_used}</p>}
       </section>
 
-      {/* Notes */}
       <section className="bg-white rounded-2xl p-6 shadow-sm border border-green-50">
-        <h2 className="font-semibold text-base mb-1 text-gray-800">Notes <span className="text-gray-400 font-normal text-xs">(optional)</span></h2>
+        <h2 className="font-semibold text-base mb-1 text-gray-800">
+          {t.notesTitle} <span className="text-gray-400 font-normal text-xs">{t.notesOptional}</span>
+        </h2>
         <textarea
           name="notes" value={form.notes} onChange={handleChange}
-          placeholder="Any additional observations about the disease or conditions…"
+          placeholder={t.notesPlaceholder}
           rows={3}
           className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 resize-none"
         />
@@ -268,9 +316,9 @@ export default function FarmerForm({ onSuccess }: Props) {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
               <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z"/>
             </svg>
-            Submitting…
+            {t.submitting}
           </>
-        ) : 'Submit disease report'}
+        ) : t.submit}
       </button>
     </form>
   )

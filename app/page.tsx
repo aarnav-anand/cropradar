@@ -3,13 +3,37 @@ import { useState } from 'react'
 import Link from 'next/link'
 import FarmerForm from '@/components/FarmerForm'
 
+type Lang = 'en' | 'hi'
+
+const HERO = {
+  en: {
+    label: 'Disease Reporting',
+    title: 'Report a crop disease',
+    sub: "Fill in the details below and our team will review your report. Early reporting helps protect your region's harvest.",
+    successTitle: 'Report submitted',
+    successSub: 'Your report is under review by our agronomists.',
+    successId: 'ID',
+    again: 'Submit another report',
+  },
+  hi: {
+    label: 'रोग रिपोर्टिंग',
+    title: 'फसल रोग की रिपोर्ट करें',
+    sub: 'नीचे विवरण भरें और हमारी टीम आपकी रिपोर्ट की समीक्षा करेगी। जल्दी रिपोर्ट करने से आपके क्षेत्र की फसल की रक्षा होती है।',
+    successTitle: 'रिपोर्ट सबमिट हो गई',
+    successSub: 'आपकी रिपोर्ट हमारे कृषि विशेषज्ञों द्वारा समीक्षाधीन है।',
+    successId: 'आईडी',
+    again: 'और रिपोर्ट सबमिट करें',
+  },
+}
+
 export default function Home() {
   const [submitted, setSubmitted] = useState(false)
   const [reportId, setReportId] = useState('')
+  const [lang, setLang] = useState<Lang>('en')
+  const h = HERO[lang]
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #e8f5ee 0%, #f7f9f7 60%)' }}>
-      {/* Header */}
       <header className="border-b border-green-100 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -21,9 +45,25 @@ export default function Home() {
             </div>
             <span className="font-semibold text-lg" style={{ color: '#2D6A4F' }}>CropRadar</span>
           </div>
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
-            Admin →
-          </Link>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 text-xs font-medium">
+              <button
+                onClick={() => setLang('en')}
+                className={`px-3 py-1.5 rounded-md transition-all ${lang === 'en' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLang('hi')}
+                className={`px-3 py-1.5 rounded-md transition-all ${lang === 'hi' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                हिं
+              </button>
+            </div>
+            <Link href="/admin" className="text-sm text-gray-400 hover:text-gray-700 transition-colors">
+              Admin →
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -31,15 +71,13 @@ export default function Home() {
         {!submitted ? (
           <>
             <div className="mb-8 fade-up">
-              <p className="text-xs font-medium tracking-widest uppercase text-green-600 mb-2">Disease Reporting</p>
+              <p className="text-xs font-medium tracking-widest uppercase text-green-600 mb-2">{h.label}</p>
               <h1 className="text-4xl font-bold mb-3" style={{ color: '#1a2e1f', fontFamily: 'Georgia, serif' }}>
-                Report a crop disease
+                {h.title}
               </h1>
-              <p className="text-gray-500 text-base leading-relaxed">
-                Fill in the details below and our team will review your report. Early reporting helps protect your region's harvest.
-              </p>
+              <p className="text-gray-500 text-base leading-relaxed">{h.sub}</p>
             </div>
-            <FarmerForm onSuccess={(id) => { setSubmitted(true); setReportId(id) }} />
+            <FarmerForm lang={lang} onSuccess={(id) => { setSubmitted(true); setReportId(id) }} />
           </>
         ) : (
           <div className="fade-up text-center py-20">
@@ -49,16 +87,16 @@ export default function Home() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', color: '#1a2e1f' }}>
-              Report submitted
+              {h.successTitle}
             </h2>
-            <p className="text-gray-500 mb-2">Your report is under review by our agronomists.</p>
-            <p className="text-xs text-gray-400 font-mono mb-8">ID: {reportId}</p>
+            <p className="text-gray-500 mb-2">{h.successSub}</p>
+            <p className="text-xs text-gray-400 font-mono mb-8">{h.successId}: {reportId}</p>
             <button
               onClick={() => setSubmitted(false)}
               className="px-6 py-2.5 rounded-lg text-white text-sm font-medium transition-all hover:opacity-90"
               style={{ background: '#2D6A4F' }}
             >
-              Submit another report
+              {h.again}
             </button>
           </div>
         )}

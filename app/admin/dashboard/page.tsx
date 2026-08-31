@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'reviewing' | 'accepted' | 'rejected'>('all')
   const [acceptReport, setAcceptReport] = useState<Report | null>(null)
+  const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !sessionStorage.getItem('cr_admin')) {
@@ -71,7 +72,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -91,7 +91,6 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {(['all', 'reviewing', 'accepted', 'rejected'] as const).map(s => (
             <button
@@ -105,12 +104,14 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Table */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-semibold text-gray-800">Outbreak Reports</h2>
             <button onClick={fetchReports} className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+              </svg>
               Refresh
             </button>
           </div>
@@ -127,6 +128,7 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left font-medium">Farmer</th>
                     <th className="px-6 py-3 text-left font-medium">Crop / Disease</th>
                     <th className="px-6 py-3 text-left font-medium">Tool</th>
+                    <th className="px-6 py-3 text-left font-medium">Notes</th>
                     <th className="px-6 py-3 text-left font-medium">Reported</th>
                     <th className="px-6 py-3 text-left font-medium">Status</th>
                     <th className="px-6 py-3 text-left font-medium">Photo</th>
@@ -149,7 +151,10 @@ export default function AdminDashboard() {
                           {r.tool_used || '—'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs text-gray-400">
+                      <td className="px-6 py-4 max-w-[160px]">
+                        <p className="text-xs text-gray-500 truncate">{r.notes || <span className="text-gray-300">—</span>}</p>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-400 whitespace-nowrap">
                         {new Date(r.reported_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
                       </td>
                       <td className="px-6 py-4">
@@ -159,10 +164,19 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         {r.photo_url ? (
-                          <a href={r.photo_url} target="_blank" rel="noopener noreferrer">
-                            <img src={r.photo_url} alt="Crop" className="w-10 h-10 rounded-lg object-cover border border-gray-200 hover:opacity-80 transition-opacity" />
-                          </a>
-                        ) : <span className="text-xs text-gray-300">No photo</span>}
+                          <button
+                            onClick={() => setExpandedPhoto(r.photo_url!)}
+                            className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-800 transition-colors font-medium bg-green-50 hover:bg-green-100 px-2.5 py-1.5 rounded-lg"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                              <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            View
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-300">No photo</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -195,6 +209,44 @@ export default function AdminDashboard() {
           )}
         </div>
       </main>
+
+      {/* Photo lightbox */}
+      {expandedPhoto && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setExpandedPhoto(null)}
+        >
+          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setExpandedPhoto(null)}
+              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors text-sm flex items-center gap-1"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Close
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={expandedPhoto}
+              alt="Crop disease"
+              className="w-full rounded-xl shadow-2xl object-contain max-h-[80vh]"
+            />
+            
+              href={expandedPhoto}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-center justify-center gap-2 text-white/60 hover:text-white text-xs transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              Open original
+            </a>
+          </div>
+        </div>
+      )}
 
       {acceptReport && (
         <AcceptModal
