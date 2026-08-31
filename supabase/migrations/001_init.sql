@@ -16,12 +16,15 @@ CREATE TABLE IF NOT EXISTS public.farmers (
   phone_number  text,
   croplens      int4 NOT NULL DEFAULT 0,
   senseorbit    int4 NOT NULL DEFAULT 0,
+  dizmatrix     int4 NOT NULL DEFAULT 0,
+  quallis       int4 NOT NULL DEFAULT 0,
   dif_code      varchar GENERATED ALWAYS AS (
                   -- Simple deterministic code based on id; adjust as needed
                   upper(substring(id::text, 1, 2)) || lpad((abs(hashtext(id::text)) % 100)::text, 2, '0')
                 ) STORED,
-  dizmatrix     int4 NOT NULL DEFAULT 0,
-  role          text NOT NULL DEFAULT 'farmer'
+  role          text NOT NULL DEFAULT 'farmer',
+  is_verified   bool NOT NULL DEFAULT true,
+  password_hash text
 );
 
 -- If dif_code as a generated column causes issues, use this alternative:

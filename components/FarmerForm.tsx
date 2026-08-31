@@ -176,7 +176,16 @@ export default function FarmerForm({ onSuccess, lang }: Props) {
       if (!existingFarmer) {
         const { data: newFarmer } = await supabase
           .from('farmers')
-          .insert({ farmer_name: form.farmer_name, phone_number: form.phone_number, croplens: 0, senseorbit: 0, dizmatrix: 0, role: 'farmer' })
+          .insert({
+            farmer_name: form.farmer_name,
+            phone_number: form.phone_number,
+            croplens: 0,
+            senseorbit: 0,
+            dizmatrix: 0,
+            quallis: 0,
+            role: 'farmer',
+            is_verified: true,
+          })
           .select('dif_code')
           .single()
         farmerDif = newFarmer?.dif_code ?? 'SV69'

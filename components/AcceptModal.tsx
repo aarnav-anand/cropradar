@@ -45,22 +45,50 @@ export default function AcceptModal({ report, onClose, onDone }: Props) {
 
       if (updateErr) throw updateErr
 
-      // Increment the tool-used counter on the farmer record
-      if (report.tool_used && report.farmer_dif) {
-        const toolField = report.tool_used === 'quallis' ? null : report.tool_used
-        if (toolField && ['croplens', 'senseorbit', 'dizmatrix'].includes(toolField)) {
-          const { data: farmerData } = await supabase
-            .from('farmers')
-            .select('*')
-            .eq('dif_code', report.farmer_dif)
-            .maybeSingle()
+      // Increment the credit counter on the farmer record (or create a new farmer record if it doesn't exist)
+      if (report.tool_used) {
+        const creditField = report.tool_used.toLowerCase().trim()
+        const validFields = ['croplens', 'senseorbit', 'dizmatrix', 'quallis']
 
-          if (farmerData) {
-            const row = farmerData as Record<string, any>
-            const current = row[toolField] ?? 0
-            await supabase.from('farmers')
-              .update({ [toolField]: current + 1 })
-              .eq('id', row['id'])
+        if (validFields.includes(creditField)) {
+          let farmerRecord: Record<string, any> | null = null
+
+          if (report.farmer_dif) {
+            const { data } = await supabase
+              .from('farmers')
+              .select('*')
+              .eq('dif_code', report.farmer_dif)
+              .maybeSingle()
+            farmerRecord = data
+          }
+
+          if (!farmerRecord && report.farmer_name) {
+            const { data } = await supabase
+              .from('farmers')
+              .select('*')
+              .eq('farmer_name', report.farmer_name)
+              .maybeSingle()
+            farmerRecord = data
+          }
+
+          if (farmerRecord) {
+            const current = farmerRecord[creditField] ?? 0
+            await supabase
+              .from('farmers')
+              .update({ [creditField]: current + 1 })
+              .eq('id', farmerRecord.id)
+          } else {
+            await supabase
+              .from('farmers')
+              .insert({
+                farmer_name: report.farmer_name,
+                role: 'farmer',
+                is_verified: true,
+                croplens: creditField === 'croplens' ? 1 : 0,
+                senseorbit: creditField === 'senseorbit' ? 1 : 0,
+                dizmatrix: creditField === 'dizmatrix' ? 1 : 0,
+                quallis: creditField === 'quallis' ? 1 : 0,
+              })
           }
         }
       }
