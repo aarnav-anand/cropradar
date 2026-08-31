@@ -100,7 +100,7 @@ export default function AcceptModal({ report, onClose, onDone }: Props) {
               <span className="font-medium">{report.disease}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Tool used</span>
+              <span className="text-gray-400">Credit requested</span>
               <span className="font-medium capitalize">{report.tool_used || '—'}</span>
             </div>
           </div>

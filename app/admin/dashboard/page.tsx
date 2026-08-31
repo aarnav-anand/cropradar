@@ -125,7 +125,7 @@ export default function AdminDashboard() {
                   <tr className="text-xs text-gray-400 border-b border-gray-50">
                     <th className="px-6 py-3 text-left font-medium">Farmer</th>
                     <th className="px-6 py-3 text-left font-medium">Crop / Disease</th>
-                    <th className="px-6 py-3 text-left font-medium">Tool</th>
+                    <th className="px-6 py-3 text-left font-medium">Credit Requested</th>
                     <th className="px-6 py-3 text-left font-medium">Notes</th>
                     <th className="px-6 py-3 text-left font-medium">Reported</th>
                     <th className="px-6 py-3 text-left font-medium">Status</th>
