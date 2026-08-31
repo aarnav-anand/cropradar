@@ -232,7 +232,7 @@ export default function AdminDashboard() {
               alt="Crop disease"
               className="w-full rounded-xl shadow-2xl object-contain max-h-[80vh]"
             />
-            
+            <a
               href={expandedPhoto}
               target="_blank"
               rel="noopener noreferrer"
