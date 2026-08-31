@@ -33,5 +33,23 @@ export type Farmer = {
   senseorbit: number
   dif_code: string
   dizmatrix: number
+  quallis: number
   role: string
+  is_verified?: boolean
+}
+
+export const generateDifCode = (name: string): string => {
+  if (!name) return 'CR10'
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  let prefix = 'CR'
+  if (parts.length >= 2) {
+    prefix = (parts[0][0] + parts[1][0]).toUpperCase()
+  } else if (parts.length === 1 && parts[0].length >= 2) {
+    prefix = parts[0].substring(0, 2).toUpperCase()
+  } else if (parts.length === 1) {
+    prefix = (parts[0][0] + 'X').toUpperCase()
+  }
+  prefix = prefix.replace(/[^A-Z0-9]/g, 'X')
+  const randomNum = Math.floor(10 + Math.random() * 90)
+  return `${prefix}${randomNum}`
 }

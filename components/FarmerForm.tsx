@@ -1,7 +1,7 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { supabase } from '@/lib/supabase'
+import { supabase, generateDifCode } from '@/lib/supabase'
 import { v4 as uuidv4 } from 'uuid'
 
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false, loading: () => (
@@ -171,14 +171,16 @@ export default function FarmerForm({ onSuccess, lang }: Props) {
         .eq('phone_number', form.phone_number)
         .maybeSingle()
 
-      let farmerDif = existingFarmer?.dif_code ?? 'SV69'
+      let farmerDif = existingFarmer?.dif_code ?? ''
 
       if (!existingFarmer) {
+        const newDifCode = generateDifCode(form.farmer_name)
         const { data: newFarmer } = await supabase
           .from('farmers')
           .insert({
             farmer_name: form.farmer_name,
             phone_number: form.phone_number,
+            dif_code: newDifCode,
             croplens: 0,
             senseorbit: 0,
             dizmatrix: 0,
@@ -188,7 +190,7 @@ export default function FarmerForm({ onSuccess, lang }: Props) {
           })
           .select('dif_code')
           .single()
-        farmerDif = newFarmer?.dif_code ?? 'SV69'
+        farmerDif = newFarmer?.dif_code ?? newDifCode
       }
 
       const id = uuidv4()

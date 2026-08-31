@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, generateDifCode } from '@/lib/supabase'
 
 type Report = {
   id: string
@@ -78,10 +78,12 @@ export default function AcceptModal({ report, onClose, onDone }: Props) {
               .update({ [creditField]: current + 1 })
               .eq('id', farmerRecord.id)
           } else {
+            const difCode = report.farmer_dif || generateDifCode(report.farmer_name)
             await supabase
               .from('farmers')
               .insert({
                 farmer_name: report.farmer_name,
+                dif_code: difCode,
                 role: 'farmer',
                 is_verified: true,
                 croplens: creditField === 'croplens' ? 1 : 0,
