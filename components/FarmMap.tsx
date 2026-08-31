@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import 'leaflet/dist/leaflet.css'
 
 type Props = {
   onChange: (geojson: any, lat: number, lng: number) => void
@@ -8,16 +9,13 @@ type Props = {
 export default function FarmMap({ onChange }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
-  const drawnLayersRef = useRef<any>(null)
   const [drawn, setDrawn] = useState(false)
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    // Dynamically import Leaflet
     const initMap = async () => {
       const L = (await import('leaflet')).default
-      await import('leaflet/dist/leaflet.css')
 
       // Fix default icon issue
       delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -38,7 +36,6 @@ export default function FarmMap({ onChange }: Props) {
 
       mapInstanceRef.current = map
 
-      // Simple polygon drawing tool
       let points: [number, number][] = []
       let tempMarkers: any[] = []
       let polygon: any = null
@@ -70,7 +67,6 @@ export default function FarmMap({ onChange }: Props) {
         updatePolygon()
       })
 
-      // Clear button
       const ClearControl = L.Control.extend({
         onAdd: () => {
           const btn = L.DomUtil.create('button')
