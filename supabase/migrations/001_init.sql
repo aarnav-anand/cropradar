@@ -71,8 +71,20 @@ CREATE TABLE IF NOT EXISTS public.carts (
 -- ============================================================
 -- Storage bucket for crop photos
 -- ============================================================
--- Run in Supabase dashboard > Storage > New bucket:
--- Name: crop-photos, Public: true
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('crop-photos', 'crop-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage object policies
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public Read Crop Photos') THEN
+    CREATE POLICY "Public Read Crop Photos" ON storage.objects FOR SELECT USING (bucket_id = 'crop-photos');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public Insert Crop Photos') THEN
+    CREATE POLICY "Public Insert Crop Photos" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'crop-photos');
+  END IF;
+END $$;
 
 -- ============================================================
 -- Row Level Security (basic open policy for development)

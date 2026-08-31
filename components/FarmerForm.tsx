@@ -80,6 +80,15 @@ const T = {
 type Lang = 'en' | 'hi'
 type Props = { onSuccess: (id: string) => void; lang: Lang }
 
+const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = err => reject(err)
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function FarmerForm({ onSuccess, lang }: Props) {
   const t = T[lang]
   const [form, setForm] = useState({
@@ -138,12 +147,20 @@ export default function FarmerForm({ onSuccess, lang }: Props) {
     try {
       let photoUrl: string | null = null
       if (photo) {
-        const ext = photo.name.split('.').pop()
-        const path = `reports/${uuidv4()}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('crop-photos').upload(path, photo)
-        if (!uploadErr) {
-          const { data } = supabase.storage.from('crop-photos').getPublicUrl(path)
-          photoUrl = data.publicUrl
+        try {
+          const ext = photo.name.split('.').pop() || 'jpg'
+          const path = `reports/${uuidv4()}.${ext}`
+          const { error: uploadErr } = await supabase.storage.from('crop-photos').upload(path, photo)
+          if (!uploadErr) {
+            const { data } = supabase.storage.from('crop-photos').getPublicUrl(path)
+            photoUrl = data.publicUrl
+          } else {
+            console.warn('Supabase storage upload failed:', uploadErr.message, '- falling back to data URL')
+            photoUrl = await fileToDataUrl(photo)
+          }
+        } catch (storageErr) {
+          console.warn('Storage exception, using data URL fallback:', storageErr)
+          photoUrl = await fileToDataUrl(photo)
         }
       }
 
