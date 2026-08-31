@@ -7,11 +7,11 @@ import { v4 as uuidv4 } from 'uuid'
 const FarmMap = dynamic(() => import('./FarmMap'), { ssr: false, loading: () => (
   <div className="h-96 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">Loading map…</div>
 )})
-
+//karja kaam bhai pls
 const CROPS = ['Wheat', 'Tomato', 'Strawberry', 'Potato', 'Rice', 'Maize', 'Cotton', 'Sugarcane', 'Soybean', 'Other']
 const TOOLS = [
-  { id: 'uallis', label: 'Uallis' },
-  { id: 'senseorbit', label: 'Ensesrbit' },
+  { id: 'quallis', label: 'Quallis' },
+  { id: 'senseorbit', label: 'Senseorbit' },
   { id: 'dizmatrix', label: 'Dizmatrix' },
   { id: 'croplens', label: 'Croplens' },
 ]

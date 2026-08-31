@@ -47,7 +47,7 @@ export default function AcceptModal({ report, onClose, onDone }: Props) {
 
       // Increment the tool-used counter on the farmer record
       if (report.tool_used && report.farmer_dif) {
-        const toolField = report.tool_used === 'uallis' ? null : report.tool_used
+        const toolField = report.tool_used === 'quallis' ? null : report.tool_used
         if (toolField && ['croplens', 'senseorbit', 'dizmatrix'].includes(toolField)) {
           const { data: farmerData } = await supabase
             .from('farmers')
