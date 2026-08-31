@@ -47,20 +47,20 @@ export default function AcceptModal({ report, onClose, onDone }: Props) {
 
       // Increment the tool-used counter on the farmer record
       if (report.tool_used && report.farmer_dif) {
-        const toolField = report.tool_used === 'uallis' ? null : report.tool_used // uallis has no direct column
+        const toolField = report.tool_used === 'uallis' ? null : report.tool_used
         if (toolField && ['croplens', 'senseorbit', 'dizmatrix'].includes(toolField)) {
-          // Get current value
           const { data: farmerData } = await supabase
             .from('farmers')
-            .select(`id, ${toolField}`)
+            .select('*')
             .eq('dif_code', report.farmer_dif)
             .maybeSingle()
 
           if (farmerData) {
-            const current = (farmerData as any)[toolField] ?? 0
+            const row = farmerData as Record<string, any>
+            const current = row[toolField] ?? 0
             await supabase.from('farmers')
               .update({ [toolField]: current + 1 })
-              .eq('id', farmerData.id)
+              .eq('id', row['id'])
           }
         }
       }
