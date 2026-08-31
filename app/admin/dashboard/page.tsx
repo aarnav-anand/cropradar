@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'reviewing' | 'accepted' | 'rejected'>('all')
+  const [filter, setFilter] = useState<'all' | 'reviewing'>('all')
   const [acceptReport, setAcceptReport] = useState<Report | null>(null)
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null)
 
@@ -53,8 +53,8 @@ export default function AdminDashboard() {
   useEffect(() => { fetchReports() }, [filter])
 
   const handleReject = async (id: string) => {
-    if (!confirm('Delete this report?')) return
-    await supabase.from('outbreak_reports').delete().eq('id', id)
+    if (!confirm('Reject this report?')) return
+    await supabase.from('outbreak_reports').update({ status: 'rejected' }).eq('id', id)
     fetchReports()
   }
 
@@ -66,8 +66,6 @@ export default function AdminDashboard() {
   const counts = {
     all: reports.length,
     reviewing: reports.filter(r => r.status === 'reviewing').length,
-    accepted: reports.filter(r => r.status === 'accepted').length,
-    rejected: reports.filter(r => r.status === 'rejected').length,
   }
 
   return (
@@ -91,15 +89,15 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {(['all', 'reviewing', 'accepted', 'rejected'] as const).map(s => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          {(['all', 'reviewing'] as const).map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}
               className={`bg-white rounded-xl p-4 border-2 text-left transition-all ${filter === s ? 'border-green-500 shadow-sm' : 'border-transparent'}`}
             >
               <div className="text-2xl font-bold" style={{ color: '#1a2e1f' }}>{counts[s]}</div>
-              <div className="text-xs text-gray-400 capitalize mt-0.5">{s === 'all' ? 'Total reports' : s}</div>
+              <div className="text-xs text-gray-400 capitalize mt-0.5">{s === 'all' ? 'Total reports' : 'Pending review'}</div>
             </button>
           ))}
         </div>
